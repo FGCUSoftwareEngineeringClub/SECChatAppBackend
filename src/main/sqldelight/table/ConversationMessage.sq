@@ -1,0 +1,38 @@
+CREATE TABLE ConversationMessage(
+  conversationId INTEGER NOT NULL,
+  id SERIAL NOT NULL PRIMARY KEY,
+  authorId TEXT NOT NULL,
+  text TEXT NOT NULL,
+  dateSent INT8 NOT NULL,
+  CONSTRAINT fk_user_author_id FOREIGN KEY (authorId) REFERENCES ChatUser(username),
+  CONSTRAINT fk_conversaion_message_id FOREIGN KEY (conversationId) REFERENCES Conversation(id) ON DELETE CASCADE
+);
+
+getAllMessages:
+SELECT * FROM ConversationMessage ORDER BY dateSent DESC;
+
+-- Get all messages for a conversation, with the newest messages at the top.
+-- Provide the current time (in milliseconds) to get the absolute newest messages in a conversation.
+getConversationMessages:
+SELECT * FROM ConversationMessage
+WHERE conversationId = ? AND dateSent < ?
+ORDER BY dateSent DESC
+LIMIT ?;
+
+getConversationMessagesFromAuthor:
+SELECT * FROM ConversationMessage
+WHERE conversationId = ? AND authorId = ? AND dateSent < ?
+ORDER BY dateSent DESC
+LIMIT ?;
+
+insertMessage:
+INSERT INTO ConversationMessage (conversationId, authorId, text, dateSent) VALUES (?, ?, ?, ?);
+
+deleteMessage:
+DELETE FROM ConversationMessage WHERE id = ?;
+
+getMessage:
+SELECT * FROM ConversationMessage WHERE id = ?;
+
+getMostRecentConversationMessage:
+SELECT * FROM ConversationMessage WHERE conversationId = ? ORDER BY dateSent DESC LIMIT 1;

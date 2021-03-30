@@ -1,0 +1,26 @@
+CREATE TABLE ChatUser(
+  username TEXT PRIMARY KEY,
+  displayName TEXT NOT NULL,
+  encryptedPassword TEXT NOT NULL
+);
+
+getAllUsers:
+SELECT * FROM ChatUser;
+
+getUser:
+SELECT * FROM ChatUser WHERE username = ?;
+
+searchUser:
+SELECT * FROM ChatUser WHERE (username LIKE "%" || ? || "%") OR (displayName LIKE "%" || ? || "%") ORDER BY username;
+
+removeUser:
+DELETE FROM ChatUser WHERE username = ?;
+
+insertUser:
+INSERT INTO ChatUser (username, displayName, encryptedPassword) VALUES (?, ?, ?);
+
+updateUserDisplayName:
+UPDATE ChatUser SET displayName = ? WHERE username = ?;
+
+updateUserPassword:
+UPDATE ChatUser SET encryptedPassword = ? WHERE username = ?;

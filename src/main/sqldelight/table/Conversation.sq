@@ -1,0 +1,50 @@
+CREATE TABLE Conversation(
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  hasDefaultName INTEGER NOT NULL DEFAULT 1,
+  ownerId TEXT NOT NULL,
+  CONSTRAINT conversation_owner_user_fk FOREIGN KEY (ownerId) REFERENCES ChatUser(username) ON DELETE CASCADE
+);
+
+CREATE TABLE ConversationMember(
+  conversationId INTEGER NOT NULL REFERENCES Conversation(id),
+  memberId TEXT NOT NULL REFERENCES ChatUser(username),
+  PRIMARY KEY(conversationId, memberId)
+);
+
+getConversation:
+SELECT * FROM Conversation WHERE id = ?;
+
+getAllConversations:
+SELECT * FROM Conversation;
+
+getConversationMembers:
+SELECT ChatUser.* FROM ConversationMember
+  INNER JOIN ChatUser ON ChatUser.username = ConversationMember.memberId AND ConversationMember.conversationId = ?;
+
+addUserToConversation:
+INSERT INTO ConversationMember (conversationId, memberId) VALUES (?, ?);
+
+removeUserFromConversation:
+DELETE FROM ConversationMember WHERE conversationId = ? AND memberId = ?;
+
+createConversation:
+INSERT INTO Conversation (name, ownerId, hasDefaultName) VALUES (?, ?, ?) RETURNING id;
+
+updateConversationName:
+UPDATE Conversation SET name = ? WHERE id = ?;
+
+setConversationNameType:
+UPDATE Conversation SET hasDefaultName = ? WHERE id = ?;
+
+getParticipatedConversations:
+SELECT Conversation.*,
+(SELECT ConversationMessage.id FROM ConversationMessage
+  WHERE conversationId = Conversation.id
+  ORDER BY dateSent DESC
+  LIMIT 1
+) lastMessageId
+  FROM Conversation
+  INNER JOIN ConversationMember ON
+    ConversationMember.memberId = ? AND Conversation.id = ConversationMember.conversationId
+ORDER BY lastMessageId DESC;
